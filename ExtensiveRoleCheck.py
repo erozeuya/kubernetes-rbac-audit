@@ -1,7 +1,11 @@
 import json
 import argparse
 import logging
-from colorama import init, Fore, Back, Style
+
+RED = "\x1b[31;20m"
+YELLOW = "\x1b[33;20m"
+GREEN = "\x1b[32m"
+WHITE = "\x1b[0m"
 
 def get_argument_parser():
     parser = argparse.ArgumentParser()
@@ -18,10 +22,9 @@ def open_file(file_path):
 
 class ExtensiveRolesChecker(object):
     def __init__(self, json_file, role_kind):
-        init()
         self._role = logging.getLogger(role_kind)
         self._role_handler = logging.StreamHandler()
-        self._role_format = logging.Formatter(f'{Fore.YELLOW}[!][%(name)s]{Fore.WHITE}\u2192 %(message)s')
+        self._role_format = logging.Formatter(f'{YELLOW}[!][%(name)s]{WHITE}\u2192 %(message)s')
         self._role_handler.setFormatter(self._role_format)
         self._role.addHandler(self._role_handler)
         self._json_file = json_file
@@ -62,7 +65,7 @@ class ExtensiveRolesChecker(object):
         if ('secrets' in rule['resources'] and any([sign for sign in verbs if sign in rule['verbs']])):
             filtered_name = self.get_non_default_name(role_name)
             if filtered_name:
-                self._role.warning(f'{Fore.GREEN}{filtered_name}' + f'{Fore.RED} Has permission to list secrets!')
+                self._role.warning(f'{GREEN}{filtered_name}' + f'{RED} Has permission to list secrets!')
                 self.add_result(filtered_name, 'Has permission to list secrets!')
 
     #Any Any roles
@@ -70,7 +73,7 @@ class ExtensiveRolesChecker(object):
         if ('*' in rule['resources'] and '*' in rule['verbs']):
             filtered_name = self.get_non_default_name(role_name)
             if filtered_name:
-                self._role.warning(f'{Fore.GREEN}{filtered_name}'+ f'{Fore.RED} Has Admin-Cluster permission!')
+                self._role.warning(f'{GREEN}{filtered_name}'+ f'{RED} Has Admin-Cluster permission!')
                 self.add_result(filtered_name, 'Has Admin-Cluster permission!')
 
     #get ANY verbs:
@@ -96,7 +99,7 @@ class ExtensiveRolesChecker(object):
         if '*' in rule['verbs']:
             filtered_name = self.get_non_default_name(role_name)
             if filtered_name:
-                self._role.warning(f'{Fore.GREEN}{filtered_name}'+ f'{Fore.RED} Has permission to access {found_sign[0]} with any verb!')
+                self._role.warning(f'{GREEN}{filtered_name}'+ f'{RED} Has permission to access {found_sign[0]} with any verb!')
                 self.add_result(filtered_name, f'Has permission to access {found_sign[0]} with any verb!')
 
     def any_resources(self, rule, role_name):
@@ -107,7 +110,7 @@ class ExtensiveRolesChecker(object):
         if ('*' in rule['resources']):
             filtered_name = self.get_non_default_name(role_name)
             if filtered_name:
-                self._role.warning(f'{Fore.GREEN}{filtered_name}'+ f'{Fore.RED} Has permission to use {found_sign[0]} on any resource!')
+                self._role.warning(f'{GREEN}{filtered_name}'+ f'{RED} Has permission to use {found_sign[0]} on any resource!')
                 self.add_result(filtered_name, f'Has permission to use {found_sign[0]} on any resource')
 
     def high_risk_roles(self, rule, role_name):
@@ -121,7 +124,7 @@ class ExtensiveRolesChecker(object):
             return
         filtered_name = self.get_non_default_name(role_name)
         if filtered_name:
-            self._role.warning(f'{Fore.GREEN}{filtered_name}'+ f'{Fore.RED} Has permission to {found_actions[0]} {found_attribute[0]}!')
+            self._role.warning(f'{GREEN}{filtered_name}'+ f'{RED} Has permission to {found_actions[0]} {found_attribute[0]}!')
             self.add_result(filtered_name, f'Has permission to {found_actions[0]} {found_attribute[0]}!')
 
     def role_and_roleBindings(self, rule, role_name):
@@ -132,7 +135,7 @@ class ExtensiveRolesChecker(object):
         if ('create' in rule['verbs']):
             filtered_name = self.get_non_default_name(role_name)
             if filtered_name:
-                self._role.warning(f'{Fore.GREEN}{filtered_name}' + f'{Fore.RED} Has permission to create {found_attribute[0]}!')
+                self._role.warning(f'{GREEN}{filtered_name}' + f'{RED} Has permission to create {found_attribute[0]}!')
                 self.add_result(filtered_name, f'Has permission to create {found_attribute[0]}!')
 
 
@@ -140,21 +143,21 @@ class ExtensiveRolesChecker(object):
         if 'pods' in rule['resources'] and 'create' in rule['verbs']:
             filtered_name = self.get_non_default_name(role_name)
             if filtered_name:
-                self._role.warning(f'{Fore.GREEN}{filtered_name}'+ f'{Fore.RED} Has permission to create pods!')
+                self._role.warning(f'{GREEN}{filtered_name}'+ f'{RED} Has permission to create pods!')
                 self.add_result(filtered_name, 'Has permission to create pods!')
 
     def pods_exec(self, rule, role_name):
         if 'pods/exec' in rule['resources'] and 'create' in rule['verbs']:
             filtered_name = self.get_non_default_name(role_name)
             if filtered_name:
-                self._role.warning(f'{Fore.GREEN}{filtered_name}' + f'{Fore.RED} Has permission to use pod exec!')
+                self._role.warning(f'{GREEN}{filtered_name}' + f'{RED} Has permission to use pod exec!')
                 self.add_result(filtered_name, 'Has permission to use pod exec!')
 
     def pods_attach(self, rule, role_name):
         if 'pods/attach' in rule['resources'] and 'create' in rule['verbs']:
             filtered_name = self.get_non_default_name(role_name)
             if filtered_name:
-                self._role.warning(f'{Fore.GREEN}{filtered_name}' + f'{Fore.RED} Has permission to attach pods!')
+                self._role.warning(f'{GREEN}{filtered_name}' + f'{RED} Has permission to attach pods!')
                 self.add_result(filtered_name, 'Has permission to attach pods!')
 
     @staticmethod
@@ -188,9 +191,9 @@ class roleBingingChecker(object):
 
     def print_rolebinding_results(self, sub, role_name, bind_kind):
         if sub['kind'] == 'ServiceAccount':
-            print(f'{Fore.YELLOW}[!][{bind_kind}]{Fore.WHITE}\u2192 ' + f'{Fore.GREEN}{role_name}{Fore.RED} is binded to {sub["name"]} ServiceAccount.')
+            print(f'{YELLOW}[!][{bind_kind}]{WHITE}\u2192 ' + f'{GREEN}{role_name}RED is binded to {sub["name"]} ServiceAccount.')
         else:
-            print(f'{Fore.YELLOW}[!][{bind_kind}]{Fore.WHITE}\u2192 ' + f'{Fore.GREEN}{role_name}{Fore.RED} is binded to the {sub["kind"]}: {sub["name"]}!')
+            print(f'{YELLOW}[!][{bind_kind}]{WHITE}\u2192 ' + f'{GREEN}{role_name}RED is binded to the {sub["kind"]}: {sub["name"]}!')
 
 
 
@@ -204,7 +207,7 @@ if __name__ == '__main__':
         extensive_ClusterRoles = [result for result in extensiveClusterRolesChecker.results]
 
     if args.role:
-        print(f'{Fore.WHITE}[*] Started enumerating risky Roles:')
+        print(f'{WHITE}[*] Started enumerating risky Roles:')
         role_kind = 'Role'
         Role_json_file = open_file(args.role)
         extensiveRolesChecker = ExtensiveRolesChecker(Role_json_file, role_kind)
@@ -212,13 +215,13 @@ if __name__ == '__main__':
         extensive_roles = extensive_roles + extensive_ClusterRoles
 
     if args.cluseterolebindings:
-        print(f'{Fore.WHITE}[*] Started enumerating risky ClusterRoleBinding:')
+        print(f'{WHITE}[*] Started enumerating risky ClusterRoleBinding:')
         bind_kind = 'ClusterRoleBinding'
         clusterRoleBinding_json_file = open_file(args.cluseterolebindings)
         extensive_clusteRoleBindings = roleBingingChecker(clusterRoleBinding_json_file, extensive_roles, bind_kind)
 
     if args.rolebindings:
-        print(f'{Fore.WHITE}[*] Started enumerating risky RoleRoleBindings:')
+        print(f'{WHITE}[*] Started enumerating risky RoleRoleBindings:')
         bind_kind = 'RoleBinding'
         RoleBinding_json_file = open_file(args.rolebindings)
         extensive_RoleBindings = roleBingingChecker(RoleBinding_json_file, extensive_roles, bind_kind)
