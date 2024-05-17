@@ -51,4 +51,5 @@ python ExtensiveRoleCheck.py --clusterRole clusterroles.json  --role Roles.json 
 ##  Maintainers:
 Or Ida: or.ida@cyberark.com
 
-
+## Why this Fork?
+Forked to remove `colorama` dependency.
